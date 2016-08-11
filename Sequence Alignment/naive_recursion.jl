@@ -1,11 +1,12 @@
 using OhMyJulia
 
 immutable EvalMetric
+    match::Int
     mismatch::Int
     gap::Int
 end
 
-const EDIT_DISTANCE = EvalMetric(1, 1)
+const EDIT_DISTANCE = EvalMetric(0, -1, -1)
 
 function align_naive(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
     _ = Byte('_')
@@ -16,19 +17,19 @@ function align_naive(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
         elseif isempty(s2)
             s1, map(x->_, s1), eval_metric.gap * length(s1)
         else
-            min(
+            max(
                 begin # match or replace
-                    a1, a2, cost = align(s1[1:end-1], s2[1:end-1])
+                    a1, a2, score = align(s1[1:end-1], s2[1:end-1])
                     e1, e2 = s1[end], s2[end]
-                    a1++e1, a2++e2, cost+(e1!=e2)*eval_metric.mismatch
+                    a1++e1, a2++e2, score+(e1==e2?eval_metric.match:eval_metric.mismatch)
                 end,
                 begin # gap on s1
-                    a1, a2, cost = align(s1[1:end], s2[1:end-1])
-                    a1++_, a2++s2[end], cost+eval_metric.gap
+                    a1, a2, score = align(s1[1:end], s2[1:end-1])
+                    a1++_, a2++s2[end], score+eval_metric.gap
                 end,
                 begin # gap on s2
-                    a1, a2, cost = align(s1[1:end-1], s2[1:end])
-                    a1++s1[end], a2++_, cost+eval_metric.gap
+                    a1, a2, score = align(s1[1:end-1], s2[1:end])
+                    a1++s1[end], a2++_, score+eval_metric.gap
                 end,
                 key=x->x[3]
             )
@@ -48,19 +49,19 @@ function align_memo(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
         elseif isempty(s2)
             s1, map(x->_, s1), eval_metric.gap * length(s1)
         else
-            min(
+            max(
                 begin # match or replace
-                    a1, a2, cost = align(s1[1:end-1], s2[1:end-1])
+                    a1, a2, score = align(s1[1:end-1], s2[1:end-1])
                     e1, e2 = s1[end], s2[end]
-                    a1++e1, a2++e2, cost+(e1!=e2)*eval_metric.mismatch
+                    a1++e1, a2++e2, score+(e1==e2?eval_metric.match:eval_metric.mismatch)
                 end,
                 begin # gap on s1
-                    a1, a2, cost = align(s1[1:end], s2[1:end-1])
-                    a1++_, a2++s2[end], cost+eval_metric.gap
+                    a1, a2, score = align(s1[1:end], s2[1:end-1])
+                    a1++_, a2++s2[end], score+eval_metric.gap
                 end,
                 begin # gap on s2
-                    a1, a2, cost = align(s1[1:end-1], s2[1:end])
-                    a1++s1[end], a2++_, cost+eval_metric.gap
+                    a1, a2, score = align(s1[1:end-1], s2[1:end])
+                    a1++s1[end], a2++_, score+eval_metric.gap
                 end,
                 key=x->x[3]
             )
@@ -83,14 +84,14 @@ if !isinteractive()
 
 using Base.Test
 
-@assert align_naive(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == 1
+@assert align_naive(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == -1
 # @assert align_naive(b"AGGCTATCACCTGACCTCCAGGCCGATGCCC",
 #                     b"TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
 #                     EDIT_DISTANCE)[3] == 13
 
-@assert align_memo(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == 1
+@assert align_memo(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == -1
 @assert align_memo(b"AGGCTATCACCTGACCTCCAGGCCGATGCCC",
                    b"TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
-                   EDIT_DISTANCE)[3] == 13
+                   EDIT_DISTANCE)[3] == -13
 
 end
