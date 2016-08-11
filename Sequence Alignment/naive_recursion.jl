@@ -7,7 +7,7 @@ end
 
 const EDIT_DISTANCE = EvalMetric(1, 1)
 
-function align_naive(seq1::ASCIIString, seq2::ASCIIString, eval_metric::EvalMetric)
+function align_naive(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
     _ = Byte('_')
 
     function align(s1::Bytes, s2::Bytes)
@@ -35,11 +35,10 @@ function align_naive(seq1::ASCIIString, seq2::ASCIIString, eval_metric::EvalMetr
         end
     end
 
-    a1, a2, cost = align(seq1.data, seq2.data)
-    ASCIIString(a1), ASCIIString(a2), cost
+    align(seq1, seq2)
 end
 
-function align_memo(seq1::ASCIIString, seq2::ASCIIString, eval_metric::EvalMetric)
+function align_memo(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
     memo = Dict{Tuple{Bytes, Bytes}, Tuple{Bytes, Bytes, Int}}()
     _ = Byte('_')
 
@@ -76,8 +75,7 @@ function align_memo(seq1::ASCIIString, seq2::ASCIIString, eval_metric::EvalMetri
         end
     end
 
-    a1, a2, cost = align(seq1.data, seq2.data)
-    ASCIIString(a1), ASCIIString(a2), cost
+    align(seq1, seq2)
 end
 
 ###=== tests ===###
@@ -85,14 +83,14 @@ if !isinteractive()
 
 using Base.Test
 
-@assert align_naive("AGTA", "ATA", EDIT_DISTANCE)[3] == 1
-# @assert align_naive("AGGCTATCACCTGACCTCCAGGCCGATGCCC",
-#                     "TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
+@assert align_naive(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == 1
+# @assert align_naive(b"AGGCTATCACCTGACCTCCAGGCCGATGCCC",
+#                     b"TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
 #                     EDIT_DISTANCE)[3] == 13
 
-@assert align_memo("AGTA", "ATA", EDIT_DISTANCE)[3] == 1
-@assert align_memo("AGGCTATCACCTGACCTCCAGGCCGATGCCC",
-                   "TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
+@assert align_memo(b"AGTA", b"ATA", EDIT_DISTANCE)[3] == 1
+@assert align_memo(b"AGGCTATCACCTGACCTCCAGGCCGATGCCC",
+                   b"TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
                    EDIT_DISTANCE)[3] == 13
 
 end
