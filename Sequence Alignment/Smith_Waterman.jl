@@ -4,7 +4,6 @@ immutable EvalMetric
     match::Int
     mismatch::Int
     gap::Int
-    extend::Int
 end
 
 function align_local(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
@@ -73,9 +72,9 @@ if !isinteractive()
 
 using Base.Test
 
-@assert align_local(b"AGTA", b"ATA", EvalMetric(1, -1, -1, -1))[3] == 2
+@assert align_local(b"AGTA", b"ATA", EvalMetric(1, -1, -1))[3] == 2
 @assert align_local(b"AAAACCCCCGGGGTTA",
                     b"TTCCCGGGAACCAACC",
-                    EvalMetric(1, -1, -1, -1))[3] == 6
+                    EvalMetric(1, -1, -1))[3] == 6
 
 end

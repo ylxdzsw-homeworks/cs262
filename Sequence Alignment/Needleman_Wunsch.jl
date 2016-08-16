@@ -4,10 +4,9 @@ immutable EvalMetric
     match::Int
     mismatch::Int
     gap::Int
-    extend::Int
 end
 
-const EDIT_DISTANCE = EvalMetric(0, -1, -1, -1)
+const EDIT_DISTANCE = EvalMetric(0, -1, -1)
 
 function align_basic(seq1::Bytes, seq2::Bytes, eval_metric::EvalMetric)
     const l1, l2 = length(seq1)+1, length(seq2)+1
@@ -140,9 +139,9 @@ using Base.Test
                     b"TAGCTATCACGACCGCGGTCGATTTGCCCGAC",
                     EDIT_DISTANCE)[3] == -13
 
-@assert align_with_overlap_detection(b"AGTA", b"ATA", EvalMetric(2, -1, -3, -1))[3] == 3
+@assert align_with_overlap_detection(b"AGTA", b"ATA", EvalMetric(2, -1, -3))[3] == 3
 @assert align_with_overlap_detection(b"AAAACCCCCGGGGTTA",
                                      b"TTCCCGGGAACCAACC",
-                                     EvalMetric(2, -1, -3, -1))[3] == 6
+                                     EvalMetric(2, -1, -3))[3] == 6
 
 end
