@@ -32,12 +32,21 @@ function align_index_and_extend(query::Bytes, ref::Bytes, eval_metric::EvalMetri
             produce((s, i))
         end
     end
+
+    "Extensions with gaps until score < C below best score so far"
+    function extend(dir, i, j)
+
 end
 
 ###=== tests ===###
 if !isinteractive()
 
 using Base.Test
+using RedisAlchemy
+
+set_default_redis_connection(RedisConnection())
+
+p = RedisString("chr16")[100_000:150_000] |> uppercase
 
 @assert align_index_and_extend(b"GTAAGGTCCAGTAA",
                                b"GTTAGGTCAGTCA",
